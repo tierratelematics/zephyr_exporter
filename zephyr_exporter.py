@@ -1,12 +1,16 @@
 """ Ugly Jira XML parser for Zephyr tests """
 
-from bs4 import BeautifulSoup
+from StringIO import StringIO
 from pprint import pprint
+from bs4 import BeautifulSoup
+from html2rest import html2rest
 
 
 def parse_xml():
-    def _listify(text):
-        return text.replace('*', '\n*')
+    def _restify(text):
+        stream = StringIO()
+        html2rest(text.replace('*', '\n*').encode('utf-8'), writer=stream)
+        return stream.getvalue()
 
     with open('tests.xml', 'r') as xml_file:
         xml_file_contents = xml_file.read()
@@ -22,7 +26,7 @@ def parse_xml():
             key = item.key.get_text()
             row['key'] = key
             row['summary'] = item.summary.get_text()
-            row['description'] = _listify(item.description.get_text())
+            row['description'] = _restify(item.description.get_text())
             row['link'] = item.link.get_text()
             row['priority'] = item.priority.get_text()
             row['reporter'] = item.reporter.get_text()
@@ -47,9 +51,9 @@ def parse_xml():
                 multisteps.append(key)
             elif len_steps == 2:
                 steps = item.find('steps')
-                row['steps'] = _listify(steps.find('step').find('step').get_text())
-                row['data'] = _listify(steps.find('data').get_text())
-                row['result'] = _listify(steps.find('result').get_text())
+                row['steps'] = _restify(steps.find('step').find('step').get_text())
+                row['data'] = _restify(steps.find('data').get_text())
+                row['result'] = _restify(steps.find('result').get_text())
 
             if key not in multisteps:
                 results.append(row)
