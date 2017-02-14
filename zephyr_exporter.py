@@ -36,12 +36,14 @@ def parse_xml():
                           item.find_all('label')]
             labels.extend(row_labels)
             row['labels'] = ', '.join(row_labels)
-            row['links'] = [link.get_text() for link in
-                            item.find_all('issuekey') if
-                            link.parent.parent.get('description') == 'tests']
-            row['attachments'] = [attachment.get('name') for attachment in
-                                  item.find_all('attachment') if
-                                  attachment.get('name')]
+            row['links'] = ', '.join(
+                [link.get_text() for link in
+                 item.find_all('issuekey') if
+                 link.parent.parent.get('description') == 'tests'])
+            row['attachments'] = ', '.join(
+                [attachment.get('name') for attachment in
+                 item.find_all('attachment') if
+                 attachment.get('name')])
 
             if row['attachments']:
                 has_attachments.append(key)
@@ -77,7 +79,9 @@ def parse_xml():
             for result in results:
                 writer.writerow(result)
 
-        # labels = sorted(list(set(labels)), key=str.lower)
+        labels = sorted(
+            list(set([label.encode('utf-8') for label in labels])),
+            key=str.lower)
 
         print "********* results ({0}) ******************".format(
             len(results))
