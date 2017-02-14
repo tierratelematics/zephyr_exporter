@@ -4,6 +4,7 @@ from StringIO import StringIO
 from pprint import pprint
 from bs4 import BeautifulSoup
 from html2rest import html2rest
+import csv
 
 
 def parse_xml():
@@ -26,14 +27,15 @@ def parse_xml():
             row = {}
             key = item.key.get_text()
             row['key'] = key
-            row['summary'] = item.summary.get_text()
+            row['summary'] = item.summary.get_text().encode('utf-8')
             row['description'] = _restify(item.description.get_text())
             row['link'] = item.link.get_text()
             row['priority'] = item.priority.get_text()
             row['reporter'] = item.reporter.get_text()
-            row['labels'] = [label.get_text() for label in
-                             item.find_all('label')]
-            labels.extend(row['labels'])
+            row_labels = [label.get_text() for label in
+                          item.find_all('label')]
+            labels.extend(row_labels)
+            row['labels'] = ', '.join(row_labels)
             row['links'] = [link.get_text() for link in
                             item.find_all('issuekey') if
                             link.parent.parent.get('description') == 'tests']
@@ -67,7 +69,15 @@ def parse_xml():
             if key not in multisteps:
                 results.append(row)
 
-        labels = sorted(list(set(labels)), key=str.lower)
+        field_names = results[0].keys()
+        with open('output.csv', 'wb') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=field_names)
+
+            writer.writeheader()
+            for result in results:
+                writer.writerow(result)
+
+        # labels = sorted(list(set(labels)), key=str.lower)
 
         print "********* results ({0}) ******************".format(
             len(results))
@@ -99,3 +109,4 @@ if __name__ == '__main__':
 
 # TODO:
 # clean labels
+# unique labels ordered in lowercase
