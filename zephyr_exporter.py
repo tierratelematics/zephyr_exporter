@@ -7,6 +7,13 @@ from html2rest import html2rest
 import csv
 
 
+labels_mapping = {
+    'Negative': 'negative',
+    'neagtive': 'negative',
+    'Positive': 'positive',
+}
+
+
 def parse_xml():
     def _restify(text):
         stream = StringIO()
@@ -32,7 +39,9 @@ def parse_xml():
             row['link'] = item.link.get_text()
             row['priority'] = item.priority.get_text()
             row['reporter'] = item.reporter.get_text()
-            row_labels = [label.get_text() for label in
+            row_labels = [labels_mapping.get(label.get_text(),
+                                             label.get_text())
+                          for label in
                           item.find_all('label')]
             labels.extend(row_labels)
             row['labels'] = ', '.join(row_labels)
