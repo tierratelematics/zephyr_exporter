@@ -17,8 +17,10 @@ labels_mapping = {
 def parse_xml():
     def _restify(text):
         stream = StringIO()
-        html2rest(text.replace('*', '\n*').encode('utf-8'), writer=stream)
-        return stream.getvalue()
+        if text and not text.startswith('*'):
+            text = '*' + text
+        html2rest(text.encode('utf-8'), writer=stream)
+        return stream.getvalue().replace('*', '\n* ')
 
     with open('tests.xml', 'r') as xml_file:
         xml_file_contents = xml_file.read()
