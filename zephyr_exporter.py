@@ -82,7 +82,11 @@ def parse_xml():
 
         field_names = results[0].keys()
         with open('output.csv', 'wb') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=field_names)
+            writer = csv.DictWriter(csvfile,
+                                    delimiter=';',
+                                    quotechar='"',
+                                    quoting=csv.QUOTE_ALL,
+                                    fieldnames=field_names)
 
             writer.writeheader()
             for result in results:
@@ -123,3 +127,4 @@ if __name__ == '__main__':
 # TODO:
 # clean labels
 # unique labels ordered in lowercase
+# summary with > (escape \> works fine in TestRail?)
