@@ -130,3 +130,4 @@ if __name__ == '__main__':
 # clean labels
 # unique labels ordered in lowercase
 # summary with > (escape \> works fine in TestRail?)
+# warn if len(summary) > 250
