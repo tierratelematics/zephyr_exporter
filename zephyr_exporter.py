@@ -11,6 +11,8 @@ labels_mapping = {
     'Negative': 'negative',
     'neagtive': 'negative',
     'Positive': 'positive',
+    'omplexParameters': 'ComplexParameters',
+    'DEVICE': 'Device',
 }
 
 
@@ -31,10 +33,15 @@ def parse_xml():
         has_attachments = []
         no_steps = []
         labels = []
+        long_summary = []
 
         for item in ddd.find_all('item'):
             row = {}
             key = item.key.get_text()
+
+            # manually set up folder/sections hierarchy
+            row['sections'] = ''
+
             row['key'] = key
             row['summary'] = item.summary.get_text().encode('utf-8')
             row['description'] = _restify(item.description.get_text())
@@ -47,6 +54,35 @@ def parse_xml():
                           item.find_all('label')]
             labels.extend(row_labels)
             row['labels'] = ', '.join(row_labels)
+
+            # initialize custom field scenario
+            row['scenario'] = ''
+            if 'positive' in row_labels:
+                row['scenario'] = 'positive'
+            elif 'negative':
+                row['scenario'] = 'negative'
+
+            # initialize custom field type
+            row['type'] = ''
+            if 'Automated' in row_labels:
+                row['type'] = 'Automated'
+            elif 'Sanity' in row_labels:
+                row['type'] = 'Sanity'
+            else:
+                row['type'] = 'Regression'
+
+            # initialize custom field components
+            components = []
+            if 'UI' in row_labels:
+                components.append('UI')
+            if 'FEP' in row_labels:
+                components.append('FEP')
+            if 'BE' in row_labels:
+                components.append('BE')
+            if 'E2E' in row_labels:
+                components.append('E2E')
+            row['components'] = ', '.join(components)
+
             row['links'] = ', '.join(
                 [link.get_text() for link in
                  item.find_all('issuekey') if
@@ -78,6 +114,9 @@ def parse_xml():
                 )
                 row['data'] = _restify(steps.find('data').get_text())
                 row['result'] = _restify(steps.find('result').get_text())
+
+            if len(row['summary']) > 250:
+                long_summary.append(key)
 
             if key not in multisteps:
                 results.append(row)
@@ -118,6 +157,10 @@ def parse_xml():
             len(multisteps))
         print pprint(multisteps)
 
+        print "********* long summary ({0}) ******************".format(
+            len(long_summary))
+        print pprint(long_summary)
+
         print "********* labels ({0}) ******************".format(
             len(labels))
         print pprint(labels)
@@ -127,7 +170,4 @@ if __name__ == '__main__':
 
 
 # TODO:
-# clean labels
-# unique labels ordered in lowercase
-# summary with > (escape \> works fine in TestRail?)
-# warn if len(summary) > 250
+# manual fix /* on SS
