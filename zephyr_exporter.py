@@ -41,6 +41,7 @@ def parse_xml():
 
             # manually set up folder/sections hierarchy
             row['sections'] = ''
+            row['description'] = ''
 
             row['key'] = key
             row['summary'] = item.summary.get_text().encode('utf-8')
@@ -117,6 +118,9 @@ def parse_xml():
 
             if len(row['summary']) > 250:
                 long_summary.append(key)
+                # do not loss data on export (we'll adjust manually)
+                row['description'] = row['summary']
+                row['summary'] = row['summary'][:250]
 
             if key not in multisteps:
                 results.append(row)
@@ -171,3 +175,4 @@ if __name__ == '__main__':
 
 # TODO:
 # manual fix /* on SS
+# set comments on custom field?
