@@ -50,10 +50,15 @@ def parse_xml():
         no_steps = []
         labels = []
         long_summary = []
+        skipped = []
 
         for item in ddd.find_all('item'):
             row = {}
             key = item.key.get_text()
+
+            if item.type.get_text() in ('Unit Test Case',):
+                skipped.append(key)
+                continue
 
             # manually set up folder/sections hierarchy
             row['sections'] = ''
@@ -181,6 +186,10 @@ def parse_xml():
         print "********* long summary ({0}) ******************".format(
             len(long_summary))
         print pprint(long_summary)
+
+        print "********* skipped ({0}) ******************".format(
+            len(skipped))
+        print pprint(skipped)
 
         print "********* labels ({0}) ******************".format(
             len(labels))
