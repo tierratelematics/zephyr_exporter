@@ -13,7 +13,23 @@ labels_mapping = {
     'Positive': 'positive',
     'omplexParameters': 'ComplexParameters',
     'DEVICE': 'Device',
+    'Subscription': 'Subscriptions',
+    'User': 'Users',
+    'Mobility': 'mobility',
+    'KeyON/OFF': 'KeyOnOff',
+    'GeoFence': 'GeoFences',
+    'CanViewer': 'CANViewer',
+    'CanBus': 'CANBus',
+    'CanParameters': 'CANParameters',
+    'canPGNRequest': 'CANPGNRequest',
+    'canReportConf': 'CANReportConf',
 }
+
+labels_blacklist = [
+    'S',
+    'L',
+    'Sprint5',
+]
 
 
 def parse_xml():
@@ -52,7 +68,8 @@ def parse_xml():
             row_labels = [labels_mapping.get(label.get_text(),
                                              label.get_text())
                           for label in
-                          item.find_all('label')]
+                          item.find_all('label')
+                          if label not in labels_blacklist]
             labels.extend(row_labels)
             row['labels'] = ', '.join(row_labels)
 
