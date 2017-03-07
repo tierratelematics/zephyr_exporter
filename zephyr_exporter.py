@@ -7,6 +7,17 @@ from html2rest import html2rest
 import csv
 import glob
 
+existing_labels = [
+    'FEP',
+    'Device',
+    'UI',
+    'NTRIP',
+    'FRED',
+    'Types',
+    'Models',
+    'Platforms',
+]
+
 
 labels_mapping = {
     'Negative': 'negative',
@@ -24,6 +35,11 @@ labels_mapping = {
     'CanParameters': 'CANParameters',
     'canPGNRequest': 'CANPGNRequest',
     'canReportConf': 'CANReportConf',
+    'reportType': 'ReportType',
+    'pgn': 'PGN',
+    'Curfew': 'Curfews',
+    'CanBusRefresh': 'CANBusRefresh',
+    'CanBusAlarms': 'CANBusAlarms',
 }
 
 labels_blacklist = [
@@ -46,7 +62,7 @@ def parse_xml():
     has_comments = []
     has_attachments = []
     no_steps = []
-    labels = []
+    labels = list(existing_labels)
     long_summary = []
     skipped = []
 
@@ -77,7 +93,7 @@ def parse_xml():
                                                  label.get_text())
                               for label in
                               item.find_all('label')
-                              if label not in labels_blacklist]
+                              if label.get_text() not in labels_blacklist]
                 labels.extend(row_labels)
                 row['labels'] = ', '.join(row_labels)
 
@@ -162,10 +178,6 @@ def parse_xml():
                 for result in results:
                     writer.writerow(result)
 
-        labels = sorted(
-            list(set([label.encode('utf-8') for label in labels])),
-            key=str.lower)
-
         print "********* results ({0}) ******************".format(
             len(results))
         print pprint(results)
@@ -194,9 +206,18 @@ def parse_xml():
             len(skipped))
         print pprint(skipped)
 
-        print "********* labels ({0}) ******************".format(
-            len(labels))
-        print pprint(labels)
+        print "********* testrail labels ({0}) ******************".format(
+            len(set(labels)))
+
+        # we have to maintain existing labels and indexes already there
+        # in testrail...
+        labels = labels[:len(existing_labels)] + sorted(
+            list(set([label.encode('utf-8') for label in
+                      labels[len(existing_labels)+1:]])),
+            key=str.lower)
+        for index, label in enumerate(labels, start=1):
+            print "{0},{1}".format(index, label)
+
 
 if __name__ == '__main__':
     parse_xml()
