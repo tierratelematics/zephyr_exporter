@@ -49,6 +49,10 @@ labels_blacklist = [
 ]
 
 
+skipped_tests = [
+]
+
+
 def parse_xml():
     def _restify(text):
         stream = StringIO()
@@ -75,7 +79,8 @@ def parse_xml():
                 row = {}
                 key = item.key.get_text()
 
-                if item.type.get_text() in ('Unit Test Case',):
+                if item.type.get_text() in ('Unit Test Case',) or \
+                   key in skipped_tests:
                     skipped.append(key)
                     continue
 
