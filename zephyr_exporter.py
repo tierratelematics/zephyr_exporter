@@ -66,6 +66,8 @@ def parse_xml():
     has_comments = []
     has_attachments = []
     no_steps = []
+    no_labels = []
+    no_links = []
     labels = list(existing_labels)
     long_summary = []
     skipped = []
@@ -100,6 +102,8 @@ def parse_xml():
                               item.find_all('label')
                               if label.get_text() not in labels_blacklist]
                 labels.extend(row_labels)
+                if not row_labels:
+                    no_labels.append(key)
                 row['labels'] = ', '.join(row_labels)
 
                 # initialize custom field scenario
@@ -133,6 +137,9 @@ def parse_xml():
                     [link.get_text() for link in
                      item.find_all('issuekey') if
                      link.parent.parent.get('description') == 'tests'])
+                if not row['links']:
+                    no_links.append(key)
+
                 row['attachments'] = ', '.join(
                     [attachment.get('name') for attachment in
                      item.find_all('attachment') if
@@ -185,31 +192,39 @@ def parse_xml():
 
         print "********* results ({0}) ******************".format(
             len(results))
-        print pprint(results)
+        pprint(results)
 
         print "********* has comments ({0}) ******************".format(
             len(has_comments))
-        print pprint(has_comments)
+        pprint(has_comments)
 
         print "********* has attachments ({0}) ******************".format(
             len(has_attachments))
-        print pprint(has_attachments)
+        pprint(has_attachments)
 
         print "********* no steps ({0}) ******************".format(
             len(no_steps))
-        print pprint(no_steps)
+        pprint(no_steps)
 
         print "********* multisteps ({0}) ******************".format(
             len(multisteps))
-        print pprint(multisteps)
+        pprint(multisteps)
 
         print "********* long summary ({0}) ******************".format(
             len(long_summary))
-        print pprint(long_summary)
+        pprint(long_summary)
 
         print "********* skipped ({0}) ******************".format(
             len(skipped))
-        print pprint(skipped)
+        pprint(skipped)
+
+        print "********* NO test links, no traceability ({0}) ********".format(
+            len(no_links))
+        pprint(no_links)
+
+        print "********* NO labels ({0}) ******************".format(
+            len(no_labels))
+        pprint(no_labels)
 
         print "********* testrail labels ({0}) ******************".format(
             len(set(labels)))
