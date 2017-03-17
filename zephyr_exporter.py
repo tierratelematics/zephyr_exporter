@@ -19,27 +19,59 @@ existing_labels = [
 ]
 
 
+# after import fix labels on stories too
 labels_mapping = {
     'Negative': 'negative',
     'neagtive': 'negative',
     'Positive': 'positive',
-    'omplexParameters': 'ComplexParameters',
+    'ComplexParameters': 'ComplexParameter',
+    'omplexParameters': 'ComplexParameter',
+    'ComplexParametersChecks': 'ComplexParameterChecks',
     'DEVICE': 'Device',
     'Subscription': 'Subscriptions',
     'User': 'Users',
     'Mobility': 'mobility',
     'KeyON/OFF': 'KeyOnOff',
-    'GeoFence': 'GeoFences',
+    'GeoFence': 'GeoFence',
+    'GeoFences': 'GeoFence',
+    'GeoFenceProfile': 'GeoFence',
+    'Geofence': 'GeoFence',
     'CanViewer': 'CANViewer',
     'CanBus': 'CANBus',
-    'CanParameters': 'CANParameters',
-    'canPGNRequest': 'CANPGNRequest',
+    'CanParameters': 'CANParameter',
+    'CANParameters': 'CANParameter',
     'canReportConf': 'CANReportConf',
     'reportType': 'ReportType',
+    'canPGNRequest': 'PGN',
     'pgn': 'PGN',
-    'Curfew': 'Curfews',
+    'PGNRequest': 'PGN',
+    'Curfew': 'Curfew',
     'CanBusRefresh': 'CANBusRefresh',
-    'CanBusAlarms': 'CANBusAlarms',
+    'CanBusAlarms': 'CANBusAlarm',
+    'Sanity': 'sanity',
+    'Long_Test_Run': 'LongRunTest',
+    'Failure': 'failure',
+    'Exploratory': 'exploratory',
+    'EquipmentUtilizationReport': 'EquipmentUtilization',
+    'Engine_OnOff_Message': 'KeyOnOff',
+    'KeyOnOffReport': 'KeyOnOff',
+    'DigitalInputsAlarms': 'DigitalInputAlarm',
+    'DigitalInputsCheck': 'DigitalInputCheck',
+    'DigitalInputsProfile': 'DigitalInput',
+    'DigitalInputsReport': 'DigitalInput',
+    'UreaReport': 'Urea',
+    'UreaReportExport': 'UreaExport',
+    'Users': 'User',
+    'VehicleDataReport': 'VehicleData',
+    'SuperSignalStatusProfile': 'SuperSignalStatus',
+    'SuperSignalStatusProfileConfiguration': 'SuperSignalStatusConfiguration',
+    'SuperSignalProtocols': 'SuperSignalProtocol',
+    'StatusProfile': 'Status',
+    'PowerManagementProfile': 'PowerManagement',
+    'DataProfile': 'CANBus',
+    'CANBusProfile': 'CANBus',
+    'Automated': 'automated',
+    'Automatable': 'automatable',
 }
 
 labels_blacklist = [
@@ -116,11 +148,11 @@ def parse_xml():
                 # initialize custom field type
                 row['type'] = ''
                 if 'Automated' in row_labels:
-                    row['type'] = 'Automated'
+                    row['type'] = 'automated'
                 elif 'Sanity' in row_labels:
-                    row['type'] = 'Sanity'
+                    row['type'] = 'sanity'
                 else:
-                    row['type'] = 'Regression'
+                    row['type'] = 'regression'
 
                 # initialize custom field components
                 components = []
