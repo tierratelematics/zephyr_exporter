@@ -190,53 +190,53 @@ def parse_xml():
                 for result in results:
                     writer.writerow(result)
 
-        print "********* results ({0}) ******************".format(
-            len(results))
-        pprint(results)
+    print "********* results ({0}) ******************".format(
+        len(results))
+    pprint(results)
 
-        print "********* has comments ({0}) ******************".format(
-            len(has_comments))
-        pprint(has_comments)
+    print "********* has comments ({0}) ******************".format(
+        len(has_comments))
+    pprint(has_comments)
 
-        print "********* has attachments ({0}) ******************".format(
-            len(has_attachments))
-        pprint(has_attachments)
+    print "********* has attachments ({0}) ******************".format(
+        len(has_attachments))
+    pprint(has_attachments)
 
-        print "********* no steps ({0}) ******************".format(
-            len(no_steps))
-        pprint(no_steps)
+    print "********* no steps ({0}) ******************".format(
+        len(no_steps))
+    pprint(no_steps)
 
-        print "********* multisteps ({0}) ******************".format(
-            len(multisteps))
-        pprint(multisteps)
+    print "********* multisteps ({0}) ******************".format(
+        len(multisteps))
+    pprint(multisteps)
 
-        print "********* long summary ({0}) ******************".format(
-            len(long_summary))
-        pprint(long_summary)
+    print "********* long summary ({0}) ******************".format(
+        len(long_summary))
+    pprint(long_summary)
 
-        print "********* skipped ({0}) ******************".format(
-            len(skipped))
-        pprint(skipped)
+    print "********* skipped ({0}) ******************".format(
+        len(skipped))
+    pprint(skipped)
 
-        print "********* NO test links, no traceability ({0}) ********".format(
-            len(no_links))
-        pprint(no_links)
+    print "********* NO test links, no traceability ({0}) ********".format(
+        len(no_links))
+    pprint(no_links)
 
-        print "********* NO labels ({0}) ******************".format(
-            len(no_labels))
-        pprint(no_labels)
+    print "********* NO labels ({0}) ******************".format(
+        len(no_labels))
+    pprint(no_labels)
 
-        print "********* testrail labels ({0}) ******************".format(
-            len(set(labels)))
+    print "********* testrail labels ({0}) ******************".format(
+        len(set(labels)))
 
-        # we have to maintain existing labels and indexes already there
-        # in testrail...
-        labels = labels[:len(existing_labels)] + sorted(
-            list(set([label.encode('utf-8') for label in
-                      labels[len(existing_labels)+1:]])),
-            key=str.lower)
-        for index, label in enumerate(labels, start=1):
-            print "{0},{1}".format(index, label)
+    # we have to maintain existing labels and indexes already there
+    # in testrail...
+    labels = labels[:len(existing_labels)] + sorted(
+        list(set([label.encode('utf-8') for label in
+                  labels[len(existing_labels)+1:]])),
+        key=str.lower)
+    for index, label in enumerate(labels, start=1):
+        print "{0},{1}".format(index, label)
 
 
 if __name__ == '__main__':
