@@ -218,6 +218,12 @@ def parse_xml():
                     results.append(row)
 
             field_names = results[0].keys()
+            preferred_order = ['sections', 'summary', 'labels',
+                               'labels', 'components']
+            # ugly ordering
+            for column_name in reversed(preferred_order):
+                field_names.remove(column_name)
+                field_names.insert(0, column_name)
             with open('{0}.csv'.format(
                     xml_file_name[:-len('.xml')]), 'wb') as csvfile:
                 writer = csv.DictWriter(csvfile,
