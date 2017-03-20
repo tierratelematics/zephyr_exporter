@@ -16,6 +16,7 @@ existing_labels = [
     'Types',
     'Models',
     'Platforms',
+    'MeasurementUnits',
 ]
 
 
