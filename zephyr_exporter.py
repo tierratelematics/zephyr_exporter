@@ -127,8 +127,10 @@ def parse_xml():
                 row['description'] = ''
 
                 row['key'] = key
-                row['summary'] = item.summary.get_text().encode('utf-8')
-                row['description'] = _restify(item.description.get_text())
+                row['summary'] = parser.unescape(
+                    item.summary.get_text().encode('utf-8'))
+                row['description'] = parser.unescape(_restify(
+                    item.description.get_text()))
                 row['link'] = item.link.get_text()
                 row['priority'] = item.priority.get_text()
                 row['reporter'] = item.reporter.get_text()
@@ -198,13 +200,15 @@ def parse_xml():
                     multisteps.append(key)
                 elif len_steps == 2:
                     steps = item.find('steps')
-                    row['steps'] = _restify(
+                    row['steps'] = parser.unescape(_restify(
                         steps.find('step').find('step').get_text()
-                    )
-                    row['data'] = _restify(steps.find('data').get_text())
-                    row['result'] = _restify(steps.find('result').get_text())
+                    ))
+                    row['data'] = parser.unescape(
+                        _restify(steps.find('data').get_text()))
+                    row['result'] = parser.unescape(
+                        _restify(steps.find('result').get_text()))
 
-                if len(parser.unescape(row['summary'])) > 250:
+                if len(row['summary']) > 250:
                     long_summary.append(key)
                     # do not loss data on export (we'll adjust manually)
                     row['description'] = row['summary']
