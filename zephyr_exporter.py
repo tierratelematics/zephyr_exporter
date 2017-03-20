@@ -4,6 +4,7 @@ from StringIO import StringIO
 from pprint import pprint
 from bs4 import BeautifulSoup
 from html2rest import html2rest
+from HTMLParser import HTMLParser
 import csv
 import glob
 
@@ -104,6 +105,8 @@ def parse_xml():
     long_summary = []
     skipped = []
 
+    parser = HTMLParser()
+
     for xml_file_name in glob.glob('*.xml'):
         with open(xml_file_name, 'r') as xml_file:
             xml_file_contents = xml_file.read()
@@ -200,7 +203,7 @@ def parse_xml():
                     row['data'] = _restify(steps.find('data').get_text())
                     row['result'] = _restify(steps.find('result').get_text())
 
-                if len(row['summary']) > 250:
+                if len(parser.unescape(row['summary'])) > 250:
                     long_summary.append(key)
                     # do not loss data on export (we'll adjust manually)
                     row['description'] = row['summary']
