@@ -7,17 +7,12 @@ from html2rest import html2rest
 from HTMLParser import HTMLParser
 import csv
 import glob
+from copy import deepcopy
 
-existing_labels = [
+existing_ce_labels = [
     'FEP',
     'Device',
-    'UI',
-    'NTRIP',
-    'FRED',
-    'Types',
-    'Models',
-    'Platforms',
-    'MeasurementUnits',
+    'UI'
 ]
 
 
@@ -87,6 +82,16 @@ skipped_tests = [
 ]
 
 
+def summary_truncate(row, long_summary, key):
+        if len(row['summary']) > 250:
+            long_summary.append(key)
+            # do not loss data on export (we'll adjust manually)
+            row['description'] = row['summary']
+            row['summary'] = row['summary'][:250]
+
+        return long_summary
+
+
 def parse_xml():
     def _restify(text):
         stream = StringIO()
@@ -102,7 +107,7 @@ def parse_xml():
     no_steps = []
     no_labels = []
     no_links = []
-    labels = list(existing_labels)
+    labels = list(existing_ce_labels)
     long_summary = []
     skipped = []
 
@@ -112,8 +117,9 @@ def parse_xml():
         with open(xml_file_name, 'r') as xml_file:
             xml_file_contents = xml_file.read()
             ddd = BeautifulSoup(xml_file_contents, 'html.parser')
+            items = ddd.find_all('item')
 
-            for item in ddd.find_all('item'):
+            for item in items:
                 row = {}
                 key = item.key.get_text()
 
@@ -194,32 +200,46 @@ def parse_xml():
                     no_steps.append(key)
                 else:
                     len_steps = len(steps_elem.find_all('step'))
+                step_tags = steps_elem.find_all('step',recursive=False)
 
+                # for each step, zephyr create two step tag
                 if len_steps > 2:
-                    # no multisteps import
+                    # ok multisteps import
                     multisteps.append(key)
+                    #
+                    for index, step in enumerate(step_tags, start=1):
+
+                        sub_row = deepcopy(row)
+
+                        sub_row['steps'] = parser.unescape(_restify(
+                            step.find('step').get_text()))
+                        sub_row['data'] = parser.unescape(
+                            _restify(step.find('data').get_text()))
+                        sub_row['result'] = parser.unescape(
+                            _restify(step.find('result').get_text()))
+                        summary = parser.unescape(
+                        item.summary.get_text().encode('utf-8'))
+
+                        sub_row['summary'] = summary + ' ' + str(index) +\
+                                         '/' + str(len_steps/2)
+                        long_summary = summary_truncate(sub_row, long_summary, key)
+
+                        if sub_row['steps'] is not None or sub_row['result'] is not None:
+                            results.append(sub_row)
+
                 elif len_steps == 2:
-                    steps = item.find('steps')
+
                     row['steps'] = parser.unescape(_restify(
-                        steps.find('step').find('step').get_text()
-                    ))
-                    row['data'] = parser.unescape(
-                        _restify(steps.find('data').get_text()))
-                    row['result'] = parser.unescape(
-                        _restify(steps.find('result').get_text()))
-
-                if len(row['summary']) > 250:
-                    long_summary.append(key)
-                    # do not loss data on export (we'll adjust manually)
-                    row['description'] = row['summary']
-                    row['summary'] = row['summary'][:250]
-
-                if key not in multisteps:
+                        step_tags[0].find('step').get_text()))
+                    row['data'] = parser.unescape(_restify(
+                        step_tags[0].find('data').get_text()))
+                    row['result'] = parser.unescape(_restify(
+                        step_tags[0].find('result').get_text()))
+                    long_summary = summary_truncate(row, long_summary, key)
                     results.append(row)
 
             field_names = results[0].keys()
-            preferred_order = ['sections', 'summary', 'labels',
-                               'labels', 'components']
+            preferred_order = ['sections', 'summary', 'labels', 'components']
             # ugly ordering
             for column_name in reversed(preferred_order):
                 field_names.remove(column_name)
@@ -235,6 +255,13 @@ def parse_xml():
                 writer.writeheader()
                 for result in results:
                     writer.writerow(result)
+    print "********* total jira tests({0}) ******************".format(
+        len(items))
+    print "********* multisteps tests ({0}) ******************".format(
+        len(multisteps))
+    pprint(multisteps)
+    print "********* test cases created ({0}) ******************".format(
+        len(results))
 
     print "********* results ({0}) ******************".format(
         len(results))
@@ -251,10 +278,6 @@ def parse_xml():
     print "********* no steps ({0}) ******************".format(
         len(no_steps))
     pprint(no_steps)
-
-    print "********* multisteps ({0}) ******************".format(
-        len(multisteps))
-    pprint(multisteps)
 
     print "********* long summary ({0}) ******************".format(
         len(long_summary))
@@ -277,16 +300,25 @@ def parse_xml():
 
     # we have to maintain existing labels and indexes already there
     # in testrail...
-    labels = labels[:len(existing_labels)] + sorted(
+    labels = labels[:len(existing_ce_labels)] + sorted(
         list(set([label.encode('utf-8') for label in
-                  labels[len(existing_labels)+1:]])),
+                  labels[len(existing_ce_labels)+1:]])),
         key=str.lower)
     for index, label in enumerate(labels, start=1):
         print "{0},{1}".format(index, label)
 
 
+
+
+
+
+
+
+
 if __name__ == '__main__':
     parse_xml()
+
+
 
 
 # TODO:
