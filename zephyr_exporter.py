@@ -208,7 +208,7 @@ def parse_xml():
                     multisteps.append(key)
                     #
                     for index, step in enumerate(step_tags, start=1):
-
+                        # deepcopy required to avoid rows overriding
                         sub_row = deepcopy(row)
 
                         sub_row['steps'] = parser.unescape(_restify(
@@ -224,7 +224,8 @@ def parse_xml():
                                          '/' + str(len_steps/2)
                         long_summary = summary_truncate(sub_row, long_summary, key)
 
-                        if sub_row['steps'] is not None or sub_row['result'] is not None:
+                        #Check for empty 'steps' or 'result' values
+                        if sub_row['steps'] != '\n* \n' or sub_row['result'] != '\n* \n':
                             results.append(sub_row)
 
                 elif len_steps == 2:
