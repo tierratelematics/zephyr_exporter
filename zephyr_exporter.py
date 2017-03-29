@@ -89,8 +89,6 @@ def summary_truncate(row, long_summary, key):
             row['description'] = row['summary']
             row['summary'] = row['summary'][:250]
 
-        return long_summary
-
 
 def parse_xml():
     def _restify(text):
@@ -202,12 +200,27 @@ def parse_xml():
                     len_steps = len(steps_elem.find_all('step'))
                 step_tags = steps_elem.find_all('step',recursive=False)
 
-                # for each step, zephyr create two step tag
-                if len_steps > 2:
-                    # ok multisteps import
+                #NO multistep tests
+                if len_steps == 2:
+
+                    row['steps'] = parser.unescape(_restify(
+                        step_tags[0].find('step').get_text()))
+                    row['data'] = parser.unescape(_restify(
+                        step_tags[0].find('data').get_text()))
+                    row['result'] = parser.unescape(_restify(
+                        step_tags[0].find('result').get_text()))
+                    summary_truncate(row, long_summary, key)
+                    results.append(row)
+
+
+                # Multistep tests
+                # For each step, zephyr create two 'step' tag
+                elif len_steps > 2:
+
                     multisteps.append(key)
-                    #
+
                     for index, step in enumerate(step_tags, start=1):
+
                         # deepcopy required to avoid rows overriding
                         sub_row = deepcopy(row)
 
@@ -222,22 +235,11 @@ def parse_xml():
 
                         sub_row['summary'] = summary + ' ' + str(index) +\
                                          '/' + str(len_steps/2)
-                        long_summary = summary_truncate(sub_row, long_summary, key)
+                        summary_truncate(sub_row, long_summary, key)
 
                         #Check for empty 'steps' or 'result' values
                         if sub_row['steps'] != '\n* \n' or sub_row['result'] != '\n* \n':
                             results.append(sub_row)
-
-                elif len_steps == 2:
-
-                    row['steps'] = parser.unescape(_restify(
-                        step_tags[0].find('step').get_text()))
-                    row['data'] = parser.unescape(_restify(
-                        step_tags[0].find('data').get_text()))
-                    row['result'] = parser.unescape(_restify(
-                        step_tags[0].find('result').get_text()))
-                    long_summary = summary_truncate(row, long_summary, key)
-                    results.append(row)
 
             field_names = results[0].keys()
             preferred_order = ['sections', 'summary', 'labels', 'components']
