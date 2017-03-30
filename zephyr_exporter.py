@@ -134,9 +134,16 @@ def parse_xml():
                 summary = parser.unescape(
                     item.summary.get_text().encode('utf-8')).strip('CLONE - ')
                 row['summary'] = summary
+
                 description = parser.unescape(_restify(
-                    item.description.get_text()))
-                row['description'] = description
+                    item.description.get_text()))\
+                    .replace('\n','').replace('< p>','')\
+                    .replace('<br >','').lstrip('* ')
+                #formatting text by adding carriage return
+                for bdd_string in ['Given', 'When', 'Then', 'AND']:
+                    description = description.replace(bdd_string, '\n' + bdd_string)
+                row['bdd'] = description
+
                 row['link'] = item.link.get_text()
                 row['priority'] = item.priority.get_text()
                 row['reporter'] = item.reporter.get_text()
@@ -230,14 +237,20 @@ def parse_xml():
                         sub_row = deepcopy(row)
 
                         expected_result = parser.unescape(
-                            _restify(step.find('result').get_text()))
+                            _restify(step.find('result').get_text()))\
+                            .replace('\n','').replace('< p>','')\
+                            .replace('<br >','').lstrip('*  ')
+
+                        #formatting text by adding carriage return
+                        for bdd_string in ['Given', 'When', 'Then', 'AND', 'And']:
+                            expected_result = expected_result.replace(bdd_string, '\n'+bdd_string)
 
                         if '@positive' in expected_result:
-                            row['scenario'] = 'Positive'
+                            sub_row['scenario'] = 'Positive'
                         elif '@negative' in expected_result:
-                            row['scenario'] = 'Negative'
+                            sub_row['scenario'] = 'Negative'
 
-                        row['description'] = expected_result
+                        sub_row['bdd'] = expected_result
                         # sub_row['steps'] = parser.unescape(_restify(
                         #     step.find('step').get_text()))
                         sub_row['data'] = parser.unescape(_restify(
@@ -249,11 +262,12 @@ def parse_xml():
                                          '/' + str(len_steps/2)
                         summary_truncate(sub_row, long_summary, key)
 
-                        results.append(sub_row)
+                        # results.append(sub_row)
 
-                        #Check for empty 'steps' or 'result' values
-                        # if sub_row['steps'] != '\n* \n' or sub_row['result'] != '\n* \n':
-                        #     results.append(sub_row)
+                        #Check for empty 'bdd'
+
+                        if sub_row['bdd'] != '':
+                            results.append(sub_row)
 
             field_names = results[0].keys()
             preferred_order = ['sections', 'summary', 'labels', 'components']
