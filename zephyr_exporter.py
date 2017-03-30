@@ -131,10 +131,12 @@ def parse_xml():
                 row['description'] = ''
 
                 row['key'] = key
-                row['summary'] = parser.unescape(
-                    item.summary.get_text().encode('utf-8'))
-                row['description'] = parser.unescape(_restify(
+                summary = parser.unescape(
+                    item.summary.get_text().encode('utf-8')).strip('CLONE - ')
+                row['summary'] = summary
+                description = parser.unescape(_restify(
                     item.description.get_text()))
+                row['description'] = description
                 row['link'] = item.link.get_text()
                 row['priority'] = item.priority.get_text()
                 row['reporter'] = item.reporter.get_text()
@@ -149,11 +151,11 @@ def parse_xml():
                 row['labels'] = ', '.join(row_labels)
 
                 # initialize custom field scenario
-                row['scenario'] = ''
-                if 'positive' in row_labels:
-                    row['scenario'] = 'positive'
-                elif 'negative':
-                    row['scenario'] = 'negative'
+                # row['scenario'] = ''
+                # if 'positive' in row_labels:
+                #     row['scenario'] = 'positive'
+                # elif 'negative':
+                #     row['scenario'] = 'negative'
 
                 # initialize custom field type
                 row['type'] = ''
@@ -202,13 +204,17 @@ def parse_xml():
 
                 #NO multistep tests
                 if len_steps == 2:
+                    if '@positive' in description:
+                        row['scenario'] = 'Positive'
+                    elif '@negative' in description:
+                        row['scenario'] = 'Negative'
 
-                    row['steps'] = parser.unescape(_restify(
-                        step_tags[0].find('step').get_text()))
+                    # row['steps'] = parser.unescape(_restify(
+                    #     step_tags[0].find('step').get_text()))
                     row['data'] = parser.unescape(_restify(
                         step_tags[0].find('data').get_text()))
-                    row['result'] = parser.unescape(_restify(
-                        step_tags[0].find('result').get_text()))
+                    # row['result'] = parser.unescape(_restify(
+                    #     step_tags[0].find('result').get_text()))
                     summary_truncate(row, long_summary, key)
                     results.append(row)
 
@@ -220,26 +226,34 @@ def parse_xml():
                     multisteps.append(key)
 
                     for index, step in enumerate(step_tags, start=1):
-
                         # deepcopy required to avoid rows overriding
                         sub_row = deepcopy(row)
 
-                        sub_row['steps'] = parser.unescape(_restify(
-                            step.find('step').get_text()))
-                        sub_row['data'] = parser.unescape(
-                            _restify(step.find('data').get_text()))
-                        sub_row['result'] = parser.unescape(
+                        expected_result = parser.unescape(
                             _restify(step.find('result').get_text()))
-                        summary = parser.unescape(
-                        item.summary.get_text().encode('utf-8'))
+
+                        if '@positive' in expected_result:
+                            row['scenario'] = 'Positive'
+                        elif '@negative' in expected_result:
+                            row['scenario'] = 'Negative'
+
+                        row['description'] = expected_result
+                        # sub_row['steps'] = parser.unescape(_restify(
+                        #     step.find('step').get_text()))
+                        sub_row['data'] = parser.unescape(_restify(
+                            step.find('step').get_text()))
+                        # sub_row['result'] = parser.unescape(
+                        #     _restify(step.find('result').get_text()))
 
                         sub_row['summary'] = summary + ' ' + str(index) +\
                                          '/' + str(len_steps/2)
                         summary_truncate(sub_row, long_summary, key)
 
+                        results.append(sub_row)
+
                         #Check for empty 'steps' or 'result' values
-                        if sub_row['steps'] != '\n* \n' or sub_row['result'] != '\n* \n':
-                            results.append(sub_row)
+                        # if sub_row['steps'] != '\n* \n' or sub_row['result'] != '\n* \n':
+                        #     results.append(sub_row)
 
             field_names = results[0].keys()
             preferred_order = ['sections', 'summary', 'labels', 'components']
